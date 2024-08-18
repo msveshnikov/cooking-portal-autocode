@@ -12,90 +12,109 @@ import {
     DialogActions,
     IconButton,
 } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { format, addDays } from "date-fns";
-import axios from "axios";
-import { API_KEY } from "../services/api";
+import { getMealPlan, searchRecipes } from "../services/api";
+import useDebounce from "../hooks/useDebounce";
+import useLocalStorage from "../hooks/useLocalStorage";
+
+const MEALS = ["breakfast", "lunch", "dinner"];
 
 const MealPlanner = () => {
-    const [startDate, setStartDate] = useState(new Date());
-    const [mealPlan, setMealPlan] = useState({});
-    const [openDialog, setOpenDialog] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedMeal, setSelectedMeal] = useState("");
+    const [startDate, setStartDate] = useLocalStorage("mealPlannerStartDate", new Date());
+    const [mealPlan, setMealPlan] = useLocalStorage("mealPlan", {});
+    const [dialogState, setDialogState] = useState({ open: false, date: null, meal: "" });
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
 
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
     const generateMealPlan = useCallback(async () => {
         try {
-            const response = await axios.get(`https://api.spoonacular.com/mealplanner/generate`, {
-                params: {
-                    apiKey: API_KEY,
-                    timeFrame: "week",
-                    startDate: format(startDate, "yyyy-MM-dd"),
-                },
-            });
-            setMealPlan(response.data.week);
+            const data = await getMealPlan(startDate);
+            setMealPlan(data.week);
         } catch (error) {
             console.error("Error fetching meal plan:", error);
         }
-    }, [startDate]);
+    }, [startDate, setMealPlan]);
 
     useEffect(() => {
         generateMealPlan();
     }, [generateMealPlan]);
 
-    const handleAddMeal = (date, meal) => {
-        setSelectedDate(date);
-        setSelectedMeal(meal);
-        setOpenDialog(true);
-    };
+    useEffect(() => {
+        const performSearch = async () => {
+            if (debouncedSearchQuery) {
+                try {
+                    const results = await searchRecipes(debouncedSearchQuery);
+                    setSearchResults(results);
+                } catch (error) {
+                    console.error("Error searching recipes:", error);
+                }
+            }
+        };
+        performSearch();
+    }, [debouncedSearchQuery]);
 
+    const handleAddMeal = (date, meal) => setDialogState({ open: true, date, meal });
     const handleCloseDialog = () => {
-        setOpenDialog(false);
+        setDialogState({ open: false, date: null, meal: "" });
         setSearchQuery("");
         setSearchResults([]);
     };
 
-    const handleSearchRecipes = async () => {
-        try {
-            const response = await axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
-                params: {
-                    apiKey: API_KEY,
-                    query: searchQuery,
-                    number: 5,
-                },
-            });
-            setSearchResults(response.data.results);
-        } catch (error) {
-            console.error("Error searching recipes:", error);
-        }
-    };
-
     const handleSelectRecipe = (recipe) => {
-        const updatedMealPlan = { ...mealPlan };
-        const dayKey = format(selectedDate, "yyyy-MM-dd");
-        if (!updatedMealPlan[dayKey]) {
-            updatedMealPlan[dayKey] = { meals: [] };
-        }
-        updatedMealPlan[dayKey].meals.push({
-            id: recipe.id,
-            title: recipe.title,
-            imageType: recipe.imageType,
-            slot: selectedMeal,
+        const { date, meal } = dialogState;
+        const dayKey = date;
+        setMealPlan((prevMealPlan) => {
+            const updatedMealPlan = { ...prevMealPlan };
+            if (!updatedMealPlan[dayKey]) {
+                updatedMealPlan[dayKey] = { meals: [] };
+            }
+            updatedMealPlan[dayKey].meals.push({
+                id: recipe.id,
+                title: recipe.title,
+                imageType: recipe.imageType,
+                slot: meal,
+            });
+            return updatedMealPlan;
         });
-        setMealPlan(updatedMealPlan);
         handleCloseDialog();
     };
 
     const handleRemoveMeal = (date, mealIndex) => {
-        const updatedMealPlan = { ...mealPlan };
-        const dayKey = format(date, "yyyy-MM-dd");
-        updatedMealPlan[dayKey].meals.splice(mealIndex, 1);
-        setMealPlan(updatedMealPlan);
+        const dayKey = date;
+        setMealPlan((prevMealPlan) => {
+            const updatedMealPlan = { ...prevMealPlan };
+            updatedMealPlan[dayKey].meals.splice(mealIndex, 1);
+            return updatedMealPlan;
+        });
+    };
+
+    const renderMealSection = (currentDate, meal) => {
+        const dayKey = currentDate;
+        const dayMeals = mealPlan[dayKey]?.meals || [];
+        const mealItems = dayMeals.filter((m) => m.slot === meal);
+
+        return (
+            <div key={meal}>
+                <Typography variant="subtitle1" style={{ marginTop: "10px" }}>
+                    {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                </Typography>
+                {mealItems.map((mealItem, mealIndex) => (
+                    <div key={mealIndex} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                        <Typography variant="body2">{mealItem.title}</Typography>
+                        <IconButton size="small" onClick={() => handleRemoveMeal(currentDate, mealIndex)}>
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </div>
+                ))}
+                <Button startIcon={<AddIcon />} onClick={() => handleAddMeal(currentDate, meal)} size="small">
+                    Add {meal}
+                </Button>
+            </div>
+        );
     };
 
     return (
@@ -103,64 +122,26 @@ const MealPlanner = () => {
             <Typography variant="h4" gutterBottom>
                 Meal Planner
             </Typography>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                    label="Start Date"
-                    value={startDate}
-                    onChange={(newValue) => setStartDate(newValue)}
-                    renderInput={(params) => <TextField {...params} />}
-                />
-            </LocalizationProvider>
+            <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={setStartDate}
+                renderInput={(params) => <TextField {...params} />}
+            />
             <Grid container spacing={3} style={{ marginTop: "20px" }}>
                 {[...Array(7)].map((_, index) => {
-                    const currentDate = addDays(startDate, index);
-                    const dayKey = format(currentDate, "yyyy-MM-dd");
-                    const dayMeals = mealPlan[dayKey]?.meals || [];
-
+                    const currentDate = startDate + index;
                     return (
                         <Grid item xs={12} sm={6} md={4} key={index}>
                             <Paper elevation={3} style={{ padding: "15px" }}>
-                                <Typography variant="h6">{format(currentDate, "EEEE, MMM d")}</Typography>
-                                {["breakfast", "lunch", "dinner"].map((meal) => (
-                                    <div key={meal}>
-                                        <Typography variant="subtitle1" style={{ marginTop: "10px" }}>
-                                            {meal.charAt(0).toUpperCase() + meal.slice(1)}
-                                        </Typography>
-                                        {dayMeals
-                                            .filter((m) => m.slot === meal)
-                                            .map((mealItem, mealIndex) => (
-                                                <div
-                                                    key={mealIndex}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        marginBottom: "5px",
-                                                    }}
-                                                >
-                                                    <Typography variant="body2">{mealItem.title}</Typography>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleRemoveMeal(currentDate, mealIndex)}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                </div>
-                                            ))}
-                                        <Button
-                                            startIcon={<AddIcon />}
-                                            onClick={() => handleAddMeal(currentDate, meal)}
-                                            size="small"
-                                        >
-                                            Add {meal}
-                                        </Button>
-                                    </div>
-                                ))}
+                                <Typography variant="h6">{currentDate}</Typography>
+                                {MEALS.map((meal) => renderMealSection(currentDate, meal))}
                             </Paper>
                         </Grid>
                     );
                 })}
             </Grid>
-            <Dialog open={openDialog} onClose={handleCloseDialog}>
+            <Dialog open={dialogState.open} onClose={handleCloseDialog}>
                 <DialogTitle>Add Meal</DialogTitle>
                 <DialogContent>
                     <TextField
@@ -172,9 +153,6 @@ const MealPlanner = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button onClick={handleSearchRecipes} variant="contained" style={{ marginTop: "10px" }}>
-                        Search
-                    </Button>
                     {searchResults.map((recipe) => (
                         <Button
                             key={recipe.id}
