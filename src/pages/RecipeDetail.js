@@ -26,7 +26,6 @@ import ShareIcon from "@mui/icons-material/Share";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import PeopleIcon from "@mui/icons-material/People";
 
 const API_KEY = "8be8f9112d4f49e8bc35100bb649ce2b";
 

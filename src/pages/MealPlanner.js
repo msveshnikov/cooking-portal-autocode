@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
     Container,
     Typography,
@@ -56,79 +56,75 @@ const MealPlanner = () => {
         performSearch();
     }, [debouncedSearchQuery]);
 
-    const handleAddMeal = (date, meal) => setDialogState({ open: true, date, meal });
-    const handleCloseDialog = () => {
+    const handleAddMeal = useCallback((date, meal) => setDialogState({ open: true, date, meal }), []);
+
+    const handleCloseDialog = useCallback(() => {
         setDialogState({ open: false, date: null, meal: "" });
         setSearchQuery("");
         setSearchResults([]);
-    };
+    }, []);
 
-    const handleSelectRecipe = (recipe) => {
-        const { date, meal } = dialogState;
-        const dayKey = date;
-        setMealPlan((prevMealPlan) => {
-            const updatedMealPlan = { ...prevMealPlan };
-            if (!updatedMealPlan[dayKey]) {
-                updatedMealPlan[dayKey] = { meals: [] };
-            }
-            updatedMealPlan[dayKey].meals.push({
-                id: recipe.id,
-                title: recipe.title,
-                imageType: recipe.imageType,
-                slot: meal,
+    const handleSelectRecipe = useCallback(
+        (recipe) => {
+            const { date, meal } = dialogState;
+            setMealPlan((prevMealPlan) => {
+                const updatedMealPlan = { ...prevMealPlan };
+                if (!updatedMealPlan[date]) {
+                    updatedMealPlan[date] = { meals: [] };
+                }
+                updatedMealPlan[date].meals.push({
+                    id: recipe.id,
+                    title: recipe.title,
+                    imageType: recipe.imageType,
+                    slot: meal,
+                });
+                return updatedMealPlan;
             });
-            return updatedMealPlan;
-        });
-        handleCloseDialog();
-    };
+            handleCloseDialog();
+        },
+        [dialogState, setMealPlan, handleCloseDialog]
+    );
 
-    const handleRemoveMeal = (date, mealIndex) => {
-        const dayKey = date;
-        setMealPlan((prevMealPlan) => {
-            const updatedMealPlan = { ...prevMealPlan };
-            updatedMealPlan[dayKey].meals.splice(mealIndex, 1);
-            return updatedMealPlan;
-        });
-    };
+    const handleRemoveMeal = useCallback(
+        (date, mealIndex) => {
+            setMealPlan((prevMealPlan) => {
+                const updatedMealPlan = { ...prevMealPlan };
+                updatedMealPlan[date].meals.splice(mealIndex, 1);
+                return updatedMealPlan;
+            });
+        },
+        [setMealPlan]
+    );
 
-    const renderMealSection = (currentDate, meal) => {
-        const dayKey = currentDate;
-        const dayMeals = mealPlan?.[dayKey]?.meals || [];
-        const mealItems = dayMeals.filter((m) => m.slot === meal);
+    const renderMealSection = useCallback(
+        (currentDate, meal) => {
+            const dayMeals = mealPlan?.[currentDate]?.meals || [];
+            const mealItems = dayMeals.filter((m) => m.slot === meal);
 
-        return (
-            <div key={meal}>
-                <Typography variant="subtitle1" style={{ marginTop: "10px" }}>
-                    {meal.charAt(0).toUpperCase() + meal.slice(1)}
-                </Typography>
-                {mealItems.map((mealItem, mealIndex) => (
-                    <div key={mealIndex} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-                        <Typography variant="body2">{mealItem.title}</Typography>
-                        <IconButton size="small" onClick={() => handleRemoveMeal(currentDate, mealIndex)}>
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </div>
-                ))}
-                <Button startIcon={<AddIcon />} onClick={() => handleAddMeal(currentDate, meal)} size="small">
-                    Add {meal}
-                </Button>
-            </div>
-        );
-    };
+            return (
+                <div key={meal}>
+                    <Typography variant="subtitle1" style={{ marginTop: "10px" }}>
+                        {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                    </Typography>
+                    {mealItems.map((mealItem, mealIndex) => (
+                        <div key={mealIndex} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+                            <Typography variant="body2">{mealItem.title}</Typography>
+                            <IconButton size="small" onClick={() => handleRemoveMeal(currentDate, mealIndex)}>
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        </div>
+                    ))}
+                    <Button startIcon={<AddIcon />} onClick={() => handleAddMeal(currentDate, meal)} size="small">
+                        Add {meal}
+                    </Button>
+                </div>
+            );
+        },
+        [mealPlan, handleAddMeal, handleRemoveMeal]
+    );
 
-    return (
-        <Container maxWidth="lg">
-            <Typography variant="h4" gutterBottom>
-                Meal Planner
-            </Typography>
-            {/* <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                    label="Start Date"
-                    value={startDate}
-                    onChange={setStartDate}
-                    renderInput={(params) => <TextField {...params} />}
-                />
-            </LocalizationProvider> */}
+    const mealPlanGrid = useMemo(
+        () => (
             <Grid container spacing={3} style={{ marginTop: "20px" }}>
                 {[...Array(7)].map((_, index) => {
                     const currentDate = startDate + index;
@@ -142,6 +138,16 @@ const MealPlanner = () => {
                     );
                 })}
             </Grid>
+        ),
+        [startDate, renderMealSection]
+    );
+
+    return (
+        <Container maxWidth="lg">
+            <Typography variant="h4" gutterBottom>
+                Meal Planner
+            </Typography>
+            {mealPlanGrid}
             <Dialog open={dialogState.open} onClose={handleCloseDialog}>
                 <DialogTitle>Add Meal</DialogTitle>
                 <DialogContent>
