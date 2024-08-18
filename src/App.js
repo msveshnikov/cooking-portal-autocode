@@ -71,12 +71,6 @@ function App() {
         localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
     };
 
-    const updateUserPreferences = (newPreferences) => {
-        const updatedPreferences = { ...userPreferences, ...newPreferences };
-        setUserPreferences(updatedPreferences);
-        localStorage.setItem("userPreferences", JSON.stringify(updatedPreferences));
-    };
-
     return (
         <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
             <CssBaseline />
