@@ -102,3 +102,34 @@ export const getRecipeNutrition = async (id) => {
         throw error;
     }
 };
+
+export const getRecipeInstructions = async (id) => {
+    try {
+        const response = await api.get(`/recipes/${id}/analyzedInstructions`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getSimilarRecipes = async (id, number = 5) => {
+    try {
+        const response = await api.get(`/recipes/${id}/similar`, {
+            params: { number },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getRecipesByIngredients = async (ingredients, number = 10) => {
+    try {
+        const response = await api.get("/recipes/findByIngredients", {
+            params: { ingredients: ingredients.join(","), number },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

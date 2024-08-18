@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Typography, Grid, Paper, Chip, CircularProgress, Box, Button, useTheme } from "@mui/material";
+import {
+    Container,
+    Typography,
+    Grid,
+    Paper,
+    Chip,
+    CircularProgress,
+    Box,
+    Button,
+    useTheme,
+    Skeleton,
+} from "@mui/material";
 import { styled } from "@mui/system";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -62,9 +73,26 @@ const RecipeDetail = () => {
 
     if (loading) {
         return (
-            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                <CircularProgress />
-            </Box>
+            <Container maxWidth="lg">
+                <StyledPaper elevation={3}>
+                    <Skeleton variant="rectangular" width="100%" height={300} />
+                    <Box mt={2}>
+                        <Skeleton variant="text" width="60%" height={40} />
+                        <Skeleton variant="text" width="40%" height={30} />
+                        <Skeleton variant="text" width="80%" height={100} />
+                    </Box>
+                </StyledPaper>
+                <StyledPaper elevation={3}>
+                    <Skeleton variant="text" width="40%" height={30} />
+                    <Grid container spacing={2}>
+                        {[...Array(6)].map((_, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={index}>
+                                <Skeleton variant="text" width="80%" height={24} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </StyledPaper>
+            </Container>
         );
     }
 
@@ -93,7 +121,12 @@ const RecipeDetail = () => {
                             variant="outlined"
                             startIcon={isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                             onClick={toggleFavorite}
-                            sx={{ color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main }}
+                            sx={{
+                                color:
+                                    theme.palette.mode === "dark"
+                                        ? theme.palette.primary.light
+                                        : theme.palette.primary.main,
+                            }}
                         >
                             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
                         </Button>

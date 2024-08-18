@@ -28,3 +28,27 @@ Allow: /recipes/
 
 # Allow indexing of category pages
 Allow: /categories/
+
+# Prevent indexing of authentication pages
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+
+# Prevent indexing of dynamic content
+Disallow: /*?*
+
+# Allow crawling of static assets
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+
+# Prevent indexing of error pages
+Disallow: /404
+Disallow: /500
+
+# Crawl-delay directive
+Crawl-delay: 10

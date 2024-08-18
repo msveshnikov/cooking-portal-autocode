@@ -45,11 +45,17 @@ const RecipeList = () => {
     }, [loadRecipes]);
 
     useEffect(() => {
-        if (searchTerm) {
-            autocompleteRecipeSearch(searchTerm)
-                .then(setAutocompleteSuggestions)
-                .catch((err) => console.error("Autocomplete error:", err));
-        }
+        const fetchAutocompleteSuggestions = async () => {
+            if (searchTerm) {
+                try {
+                    const suggestions = await autocompleteRecipeSearch(searchTerm);
+                    setAutocompleteSuggestions(suggestions);
+                } catch (err) {
+                    console.error("Autocomplete error:", err);
+                }
+            }
+        };
+        fetchAutocompleteSuggestions();
     }, [searchTerm]);
 
     const handleSearchChange = (event, value) => {
@@ -114,12 +120,7 @@ const RecipeList = () => {
                 }
                 style={{ marginBottom: "20px" }}
             />
-            <InfiniteScroll
-                dataLength={recipes.length}
-                next={loadRecipes}
-                hasMore={true}
-                loader={<CircularProgress />}
-            >
+            <InfiniteScroll dataLength={recipes.length} next={loadRecipes} hasMore={true} loader={<CircularProgress />}>
                 <Grid container spacing={3}>
                     {recipes.map((recipe) => (
                         <Grid item xs={12} sm={6} md={4} lg={3} key={recipe.id}>

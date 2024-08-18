@@ -96,3 +96,39 @@ export const autocompleteRecipeSearch = async (query, number = 10) => {
         throw error;
     }
 };
+
+export const getRecipesByIntolerances = async (intolerances, offset = 0, number = 20) => {
+    try {
+        const response = await api.get("/recipes/complexSearch", {
+            params: {
+                intolerances,
+                offset,
+                number,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching recipes by intolerances:", error);
+        throw error;
+    }
+};
+
+export const getRecipeNutrition = async (id) => {
+    try {
+        const response = await api.get(`/recipes/${id}/nutritionWidget.json`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching recipe nutrition:", error);
+        throw error;
+    }
+};
+
+export const getRecipeIngredients = async (id) => {
+    try {
+        const response = await api.get(`/recipes/${id}/ingredientWidget.json`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching recipe ingredients:", error);
+        throw error;
+    }
+};

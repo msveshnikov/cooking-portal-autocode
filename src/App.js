@@ -8,7 +8,6 @@ import Home from "./pages/Home";
 import RecipeList from "./pages/RecipeList";
 import RecipeDetail from "./pages/RecipeDetail";
 import Favorites from "./pages/Favorites";
-import Search from "./components/Search";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const lightTheme = createTheme({
@@ -71,7 +70,7 @@ function App() {
                 <Router>
                     <Header toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />
                     <Container>
-                        <Search apiKey={apiKey} />
+                       
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route

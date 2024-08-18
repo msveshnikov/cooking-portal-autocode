@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Container, Grid, Typography, TextField, CircularProgress, Switch, FormControlLabel, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import {
+    Container,
+    Grid,
+    Typography,
+    TextField,
+    CircularProgress,
+    Switch,
+    FormControlLabel,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel,
+    Snackbar,
+} from "@mui/material";
 import RecipeCard from "../components/RecipeCard";
 import { getRandomRecipes, searchRecipes } from "../services/api.js";
 import { debounce } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { useTheme } from "@mui/material/styles";
 
 const Home = () => {
     const [recipes, setRecipes] = useState([]);
@@ -13,9 +27,14 @@ const Home = () => {
     const [darkMode, setDarkMode] = useState(false);
     const [cuisine, setCuisine] = useState("");
     const [diet, setDiet] = useState("");
+    const [favorites, setFavorites] = useState([]);
+    const [error, setError] = useState(null);
+    const theme = useTheme();
 
     useEffect(() => {
         fetchRandomRecipes();
+        const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        setFavorites(storedFavorites);
     }, []);
 
     const fetchRandomRecipes = async () => {
@@ -24,7 +43,7 @@ const Home = () => {
             const data = await getRandomRecipes(12);
             setRecipes(data.recipes);
         } catch (error) {
-            console.error("Error fetching random recipes:", error);
+            setError("Error fetching random recipes. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -38,7 +57,7 @@ const Home = () => {
                 setRecipes(data.results);
                 setPage(1);
             } catch (error) {
-                console.error("Error searching recipes:", error);
+                setError("Error searching recipes. Please try again.");
             } finally {
                 setLoading(false);
             }
@@ -59,7 +78,7 @@ const Home = () => {
             setRecipes([...recipes, ...data.results]);
             setPage(page + 1);
         } catch (error) {
-            console.error("Error loading more recipes:", error);
+            setError("Error loading more recipes. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -70,15 +89,20 @@ const Home = () => {
         document.body.style.backgroundColor = darkMode ? "#ffffff" : "#303030";
     };
 
+    const toggleFavorite = (recipe) => {
+        const newFavorites = favorites.some((fav) => fav.id === recipe.id)
+            ? favorites.filter((fav) => fav.id !== recipe.id)
+            : [...favorites, recipe];
+        setFavorites(newFavorites);
+        localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    };
+
     return (
         <Container maxWidth="lg">
             <Typography variant="h4" component="h1" gutterBottom>
                 Discover Delicious Recipes
             </Typography>
-            <FormControlLabel
-                control={<Switch checked={darkMode} onChange={toggleDarkMode} />}
-                label="Dark Mode"
-            />
+            <FormControlLabel control={<Switch checked={darkMode} onChange={toggleDarkMode} />} label="Dark Mode" />
             <Grid container spacing={2} alignItems="center" marginBottom={4}>
                 <Grid item xs={12} sm={6} md={4}>
                     <TextField
@@ -92,11 +116,7 @@ const Home = () => {
                 <Grid item xs={12} sm={3} md={2}>
                     <FormControl fullWidth>
                         <InputLabel>Cuisine</InputLabel>
-                        <Select
-                            value={cuisine}
-                            label="Cuisine"
-                            onChange={(e) => setCuisine(e.target.value)}
-                        >
+                        <Select value={cuisine} label="Cuisine" onChange={(e) => setCuisine(e.target.value)}>
                             <MenuItem value="">Any</MenuItem>
                             <MenuItem value="italian">Italian</MenuItem>
                             <MenuItem value="mexican">Mexican</MenuItem>
@@ -109,11 +129,7 @@ const Home = () => {
                 <Grid item xs={12} sm={3} md={2}>
                     <FormControl fullWidth>
                         <InputLabel>Diet</InputLabel>
-                        <Select
-                            value={diet}
-                            label="Diet"
-                            onChange={(e) => setDiet(e.target.value)}
-                        >
+                        <Select value={diet} label="Diet" onChange={(e) => setDiet(e.target.value)}>
                             <MenuItem value="">Any</MenuItem>
                             <MenuItem value="vegetarian">Vegetarian</MenuItem>
                             <MenuItem value="vegan">Vegan</MenuItem>
@@ -125,20 +141,20 @@ const Home = () => {
                 </Grid>
             </Grid>
             {loading && <CircularProgress />}
-            <InfiniteScroll
-                dataLength={recipes?.length}
-                next={loadMore}
-                hasMore={true}
-                loader={<CircularProgress />}
-            >
+            <InfiniteScroll dataLength={recipes?.length} next={loadMore} hasMore={true} loader={<CircularProgress />}>
                 <Grid container spacing={3}>
                     {recipes?.map((recipe) => (
                         <Grid item key={recipe.id} xs={12} sm={6} md={4}>
-                            <RecipeCard recipe={recipe} />
+                            <RecipeCard
+                                recipe={recipe}
+                                isFavorite={favorites.some((fav) => fav.id === recipe.id)}
+                                toggleFavorite={() => toggleFavorite(recipe)}
+                            />
                         </Grid>
                     ))}
                 </Grid>
             </InfiniteScroll>
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} message={error} />
         </Container>
     );
 };
