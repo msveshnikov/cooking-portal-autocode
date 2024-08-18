@@ -12,7 +12,6 @@ import {
     DialogActions,
     IconButton,
 } from "@mui/material";
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getMealPlan, searchRecipes } from "../services/api";
@@ -22,7 +21,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 const MEALS = ["breakfast", "lunch", "dinner"];
 
 const MealPlanner = () => {
-    const [startDate, setStartDate] = useLocalStorage("mealPlannerStartDate", new Date());
+    const [startDate] = useLocalStorage("mealPlannerStartDate", new Date());
     const [mealPlan, setMealPlan] = useLocalStorage("mealPlan", {});
     const [dialogState, setDialogState] = useState({ open: false, date: null, meal: "" });
     const [searchQuery, setSearchQuery] = useState("");
@@ -94,7 +93,7 @@ const MealPlanner = () => {
 
     const renderMealSection = (currentDate, meal) => {
         const dayKey = currentDate;
-        const dayMeals = mealPlan[dayKey]?.meals || [];
+        const dayMeals = mealPlan?.[dayKey]?.meals || [];
         const mealItems = dayMeals.filter((m) => m.slot === meal);
 
         return (
@@ -122,12 +121,14 @@ const MealPlanner = () => {
             <Typography variant="h4" gutterBottom>
                 Meal Planner
             </Typography>
-            <DatePicker
-                label="Start Date"
-                value={startDate}
-                onChange={setStartDate}
-                renderInput={(params) => <TextField {...params} />}
-            />
+            {/* <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                    label="Start Date"
+                    value={startDate}
+                    onChange={setStartDate}
+                    renderInput={(params) => <TextField {...params} />}
+                />
+            </LocalizationProvider> */}
             <Grid container spacing={3} style={{ marginTop: "20px" }}>
                 {[...Array(7)].map((_, index) => {
                     const currentDate = startDate + index;

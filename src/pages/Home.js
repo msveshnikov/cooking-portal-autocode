@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useCallback } from "react";
 import {
     Container,
@@ -131,7 +132,7 @@ const Home = () => {
 
     const toggleFavorite = (recipe) => {
         const newFavorites = favorites.some((fav) => fav.id === recipe.id)
-            ? favorites.filter((fav) => fav.id !== recipe.id)
+            ? favorites?.filter((fav) => fav.id !== recipe.id)
             : [...favorites, recipe];
         setFavorites(newFavorites);
         localStorage.setItem("favorites", JSON.stringify(newFavorites));
