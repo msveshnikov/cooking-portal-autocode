@@ -1,0 +1,60 @@
+{
+  "short_name": "Recipes App",
+  "name": "Recipes Browsing Application",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "description": "A functional application for browsing and discovering delicious recipes using the Spoonacular API with an elegant Material-UI design",
+  "orientation": "any",
+  "lang": "en-US",
+  "categories": ["food", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/",
+  "dir": "ltr",
+  "features": [
+    "Spoonacular API integration",
+    "Material-UI v5 design",
+    "React Router v6",
+    "Multiple pages",
+    "Responsive grid layout",
+    "Dark mode toggle",
+    "Search with autocomplete",
+    "Infinite scrolling",
+    "Favorites feature",
+    "Recipe filtering"
+  ],
+  "permissions": [
+    "storage"
+  ]
+}

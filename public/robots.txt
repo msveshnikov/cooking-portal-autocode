@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml
+
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /favorites/
+Disallow: /user/
+Disallow: /auth/
+
+# Protect API key
+Disallow: /*8be8f9112d4f49e8bc35100bb649ce2b
+
+# Prevent indexing of search results
+Disallow: /search?
+
+# Prevent indexing of filtered results
+Disallow: /recipes?filter=
+
+# Prevent indexing of user-specific content
+Disallow: /profile/
+Disallow: /settings/
+
+# Allow indexing of recipe pages
+Allow: /recipes/
+
+# Allow indexing of category pages
+Allow: /categories/

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9A8B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="120" cy="120" r="110" fill="url(#gradient)" />
+  <g fill="#FFFFFF">
+    <path d="M60 60 L180 60 A20 20 0 0 1 200 80 L200 160 A20 20 0 0 1 180 180 L60 180 A20 20 0 0 1 40 160 L40 80 A20 20 0 0 1 60 60 Z" />
+    <circle cx="80" cy="100" r="15" />
+    <circle cx="120" cy="100" r="15" />
+    <circle cx="160" cy="100" r="15" />
+    <rect x="65" y="130" width="110" height="20" rx="10" ry="10" />
+    <path d="M90 155 L150 155 Q155 155 155 160 L155 165 Q155 170 150 170 L90 170 Q85 170 85 165 L85 160 Q85 155 90 155 Z" />
+  </g>
+  <g fill="#FF6B6B">
+    <path d="M70 70 L90 70 L90 90 L70 90 Z" />
+    <path d="M150 70 L170 70 L170 90 L150 90 Z" />
+  </g>
+  <path d="M110 140 L130 140 L130 160 L110 160 Z" fill="#FF6B6B" />
+  <text x="120" y="220" font-family="Arial, sans-serif" font-size="14" fill="#FFFFFF" text-anchor="middle">Recipes App</text>
+</svg>
