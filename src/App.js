@@ -9,6 +9,8 @@ import RecipeList from "./pages/RecipeList";
 import RecipeDetail from "./pages/RecipeDetail";
 import Favorites from "./pages/Favorites";
 import ErrorBoundary from "./components/ErrorBoundary";
+import MealPlanner from "./pages/MealPlanner";
+import UserReviews from "./pages/UserReviews";
 
 const lightTheme = createTheme({
     palette: {
@@ -34,16 +36,22 @@ const darkTheme = createTheme({
     },
 });
 
-const apiKey = "8be8f9112d4f49e8bc35100bb649ce2b";
+const apiKey = process.env.REACT_APP_SPOONACULAR_API_KEY;
 
 function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [favorites, setFavorites] = useState([]);
+    const [userPreferences, setUserPreferences] = useState({});
 
     useEffect(() => {
         const storedFavorites = localStorage.getItem("favorites");
         if (storedFavorites) {
             setFavorites(JSON.parse(storedFavorites));
+        }
+
+        const storedPreferences = localStorage.getItem("userPreferences");
+        if (storedPreferences) {
+            setUserPreferences(JSON.parse(storedPreferences));
         }
     }, []);
 
@@ -63,6 +71,12 @@ function App() {
         localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
     };
 
+    const updateUserPreferences = (newPreferences) => {
+        const updatedPreferences = { ...userPreferences, ...newPreferences };
+        setUserPreferences(updatedPreferences);
+        localStorage.setItem("userPreferences", JSON.stringify(updatedPreferences));
+    };
+
     return (
         <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
             <CssBaseline />
@@ -80,6 +94,7 @@ function App() {
                                         addToFavorites={addToFavorites}
                                         removeFromFavorites={removeFromFavorites}
                                         favorites={favorites}
+                                        userPreferences={userPreferences}
                                     />
                                 }
                             />
@@ -98,6 +113,11 @@ function App() {
                                 path="/favorites"
                                 element={<Favorites favorites={favorites} removeFromFavorites={removeFromFavorites} />}
                             />
+                            <Route
+                                path="/meal-planner"
+                                element={<MealPlanner apiKey={apiKey} userPreferences={userPreferences} />}
+                            />
+                            <Route path="/reviews" element={<UserReviews apiKey={apiKey} />} />
                         </Routes>
                     </Container>
                 </Router>

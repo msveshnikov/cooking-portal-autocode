@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Container,
     Typography,
@@ -9,12 +9,17 @@ import {
     Box,
     Button,
     useTheme,
-    Skeleton,
+    Snackbar,
+    Alert,
+    CircularProgress,
+    IconButton,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import ShareIcon from "@mui/icons-material/Share";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const API_KEY = "8be8f9112d4f49e8bc35100bb649ce2b";
 
@@ -35,7 +40,10 @@ const RecipeDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
     const theme = useTheme();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -63,34 +71,45 @@ const RecipeDetail = () => {
         if (isFavorite) {
             const updatedFavorites = favorites.filter((favId) => favId !== recipe.id);
             localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+            setSnackbarMessage("Recipe removed from favorites");
         } else {
             favorites.push(recipe.id);
             localStorage.setItem("favorites", JSON.stringify(favorites));
+            setSnackbarMessage("Recipe added to favorites");
         }
         setIsFavorite(!isFavorite);
+        setSnackbarOpen(true);
+    };
+
+    const handleShare = () => {
+        navigator
+            .share({
+                title: recipe.title,
+                text: `Check out this recipe: ${recipe.title}`,
+                url: window.location.href,
+            })
+            .then(() => {
+                setSnackbarMessage("Recipe shared successfully");
+                setSnackbarOpen(true);
+            })
+            .catch((error) => {
+                console.error("Error sharing recipe:", error);
+            });
+    };
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === "clickaway") {
+            return;
+        }
+        setSnackbarOpen(false);
     };
 
     if (loading) {
         return (
             <Container maxWidth="lg">
-                <StyledPaper elevation={3}>
-                    <Skeleton variant="rectangular" width="100%" height={300} />
-                    <Box mt={2}>
-                        <Skeleton variant="text" width="60%" height={40} />
-                        <Skeleton variant="text" width="40%" height={30} />
-                        <Skeleton variant="text" width="80%" height={100} />
-                    </Box>
-                </StyledPaper>
-                <StyledPaper elevation={3}>
-                    <Skeleton variant="text" width="40%" height={30} />
-                    <Grid container spacing={2}>
-                        {[...Array(6)].map((_, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                                <Skeleton variant="text" width="80%" height={24} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                </StyledPaper>
+                <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+                    <CircularProgress />
+                </Box>
             </Container>
         );
     }
@@ -108,6 +127,11 @@ const RecipeDetail = () => {
 
     return (
         <Container maxWidth="lg">
+            <Box mb={2}>
+                <IconButton onClick={() => navigate(-1)}>
+                    <ArrowBackIcon />
+                </IconButton>
+            </Box>
             <StyledPaper elevation={3}>
                 <Grid container justifyContent="space-between" alignItems="center">
                     <Grid item>
@@ -125,10 +149,14 @@ const RecipeDetail = () => {
                                     theme.palette.mode === "dark"
                                         ? theme.palette.primary.light
                                         : theme.palette.primary.main,
+                                marginRight: 1,
                             }}
                         >
                             {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
                         </Button>
+                        <IconButton onClick={handleShare} color="primary">
+                            <ShareIcon />
+                        </IconButton>
                     </Grid>
                 </Grid>
                 <Grid container spacing={3}>
@@ -183,6 +211,17 @@ const RecipeDetail = () => {
                     ))}
                 </ol>
             </StyledPaper>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

@@ -12,11 +12,18 @@ import {
     FormControl,
     InputLabel,
     Snackbar,
+    Button,
+    Drawer,
+    List,
+    ListItem,
+    IconButton,
 } from "@mui/material";
+import { FilterList, Mic } from "@mui/icons-material";
 import RecipeCard from "../components/RecipeCard";
 import { getRandomRecipes, searchRecipes } from "../services/api.js";
 import { debounce } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 const Home = () => {
     const [recipes, setRecipes] = useState([]);
@@ -28,12 +35,24 @@ const Home = () => {
     const [diet, setDiet] = useState("");
     const [favorites, setFavorites] = useState([]);
     const [error, setError] = useState(null);
+    const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+    const { transcript, listening, resetTranscript } = useSpeechRecognition();
 
     useEffect(() => {
         fetchRandomRecipes();
         const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
         setFavorites(storedFavorites);
+        const storedDarkMode = JSON.parse(localStorage.getItem("darkMode") || "false");
+        setDarkMode(storedDarkMode);
+        document.body.style.backgroundColor = storedDarkMode ? "#303030" : "#ffffff";
     }, []);
+
+    useEffect(() => {
+        if (transcript) {
+            setSearch(transcript);
+            resetTranscript();
+        }
+    }, [transcript, resetTranscript]);
 
     const fetchRandomRecipes = async () => {
         try {
@@ -47,7 +66,6 @@ const Home = () => {
         }
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const handleSearch = useCallback(
         debounce(async (searchTerm) => {
             try {
@@ -84,8 +102,10 @@ const Home = () => {
     };
 
     const toggleDarkMode = () => {
-        setDarkMode(!darkMode);
-        document.body.style.backgroundColor = darkMode ? "#ffffff" : "#303030";
+        const newDarkMode = !darkMode;
+        setDarkMode(newDarkMode);
+        document.body.style.backgroundColor = newDarkMode ? "#303030" : "#ffffff";
+        localStorage.setItem("darkMode", JSON.stringify(newDarkMode));
     };
 
     const toggleFavorite = (recipe) => {
@@ -94,6 +114,14 @@ const Home = () => {
             : [...favorites, recipe];
         setFavorites(newFavorites);
         localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    };
+
+    const handleVoiceSearch = () => {
+        if (!listening) {
+            SpeechRecognition.startListening();
+        } else {
+            SpeechRecognition.stopListening();
+        }
     };
 
     return (
@@ -110,33 +138,19 @@ const Home = () => {
                         placeholder="Search recipes..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        InputProps={{
+                            endAdornment: (
+                                <IconButton onClick={handleVoiceSearch}>
+                                    <Mic color={listening ? "secondary" : "inherit"} />
+                                </IconButton>
+                            ),
+                        }}
                     />
                 </Grid>
-                <Grid item xs={12} sm={3} md={2}>
-                    <FormControl fullWidth>
-                        <InputLabel>Cuisine</InputLabel>
-                        <Select value={cuisine} label="Cuisine" onChange={(e) => setCuisine(e.target.value)}>
-                            <MenuItem value="">Any</MenuItem>
-                            <MenuItem value="italian">Italian</MenuItem>
-                            <MenuItem value="mexican">Mexican</MenuItem>
-                            <MenuItem value="chinese">Chinese</MenuItem>
-                            <MenuItem value="indian">Indian</MenuItem>
-                            <MenuItem value="japanese">Japanese</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={3} md={2}>
-                    <FormControl fullWidth>
-                        <InputLabel>Diet</InputLabel>
-                        <Select value={diet} label="Diet" onChange={(e) => setDiet(e.target.value)}>
-                            <MenuItem value="">Any</MenuItem>
-                            <MenuItem value="vegetarian">Vegetarian</MenuItem>
-                            <MenuItem value="vegan">Vegan</MenuItem>
-                            <MenuItem value="gluten-free">Gluten-free</MenuItem>
-                            <MenuItem value="ketogenic">Ketogenic</MenuItem>
-                            <MenuItem value="paleo">Paleo</MenuItem>
-                        </Select>
-                    </FormControl>
+                <Grid item xs={12} sm={6} md={4}>
+                    <Button variant="outlined" startIcon={<FilterList />} onClick={() => setFilterDrawerOpen(true)}>
+                        Filters
+                    </Button>
                 </Grid>
             </Grid>
             {loading && <CircularProgress />}
@@ -153,6 +167,47 @@ const Home = () => {
                     ))}
                 </Grid>
             </InfiniteScroll>
+            <Drawer anchor="right" open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
+                <List>
+                    <ListItem>
+                        <FormControl fullWidth>
+                            <InputLabel>Cuisine</InputLabel>
+                            <Select value={cuisine} label="Cuisine" onChange={(e) => setCuisine(e.target.value)}>
+                                <MenuItem value="">Any</MenuItem>
+                                <MenuItem value="italian">Italian</MenuItem>
+                                <MenuItem value="mexican">Mexican</MenuItem>
+                                <MenuItem value="chinese">Chinese</MenuItem>
+                                <MenuItem value="indian">Indian</MenuItem>
+                                <MenuItem value="japanese">Japanese</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </ListItem>
+                    <ListItem>
+                        <FormControl fullWidth>
+                            <InputLabel>Diet</InputLabel>
+                            <Select value={diet} label="Diet" onChange={(e) => setDiet(e.target.value)}>
+                                <MenuItem value="">Any</MenuItem>
+                                <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                                <MenuItem value="vegan">Vegan</MenuItem>
+                                <MenuItem value="gluten-free">Gluten-free</MenuItem>
+                                <MenuItem value="ketogenic">Ketogenic</MenuItem>
+                                <MenuItem value="paleo">Paleo</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </ListItem>
+                    <ListItem>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                handleSearch(search);
+                                setFilterDrawerOpen(false);
+                            }}
+                        >
+                            Apply Filters
+                        </Button>
+                    </ListItem>
+                </List>
+            </Drawer>
             <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} message={error} />
         </Container>
     );

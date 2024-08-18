@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     Container,
     Typography,
@@ -12,9 +12,15 @@ import {
     Skeleton,
     useTheme,
     useMediaQuery,
+    Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShareIcon from "@mui/icons-material/Share";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const Favorites = () => {
@@ -22,24 +28,27 @@ const Favorites = () => {
     const [displayedFavorites, setDisplayedFavorites] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
+    const [shareDialogOpen, setShareDialogOpen] = useState(false);
+    const [selectedRecipe, setSelectedRecipe] = useState(null);
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    useEffect(() => {
-        const fetchFavorites = async () => {
-            try {
-                const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
-                setFavorites(storedFavorites);
-                setDisplayedFavorites(storedFavorites.slice(0, 9));
-                setIsLoading(false);
-            } catch (error) {
-                console.error("Error fetching favorites:", error);
-                setIsLoading(false);
-            }
-        };
-        fetchFavorites();
+    const fetchFavorites = useCallback(async () => {
+        try {
+            const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
+            setFavorites(storedFavorites);
+            setDisplayedFavorites(storedFavorites.slice(0, 9));
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error fetching favorites:", error);
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchFavorites();
+    }, [fetchFavorites]);
 
     const removeFromFavorites = (id) => {
         const updatedFavorites = favorites.filter((recipe) => recipe.id !== id);
@@ -57,6 +66,46 @@ const Favorites = () => {
             const newDisplayed = favorites.slice(0, displayedFavorites.length + 9);
             setDisplayedFavorites(newDisplayed);
         }, 500);
+    };
+
+    const handleShareClick = (recipe) => {
+        setSelectedRecipe(recipe);
+        setShareDialogOpen(true);
+    };
+
+    const handleShareClose = () => {
+        setShareDialogOpen(false);
+    };
+
+    const handleShare = (platform) => {
+        if (selectedRecipe) {
+            let shareUrl = "";
+            switch (platform) {
+                case "facebook":
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                        window.location.origin + "/recipe/" + selectedRecipe.id
+                    )}`;
+                    break;
+                case "twitter":
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                        `Check out this recipe: ${selectedRecipe.title}`
+                    )}&url=${encodeURIComponent(window.location.origin + "/recipe/" + selectedRecipe.id)}`;
+                    break;
+                case "pinterest":
+                    shareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(
+                        window.location.origin + "/recipe/" + selectedRecipe.id
+                    )}&media=${encodeURIComponent(selectedRecipe.image)}&description=${encodeURIComponent(
+                        selectedRecipe.title
+                    )}`;
+                    break;
+                default:
+                    break;
+            }
+            if (shareUrl) {
+                window.open(shareUrl, "_blank");
+            }
+        }
+        handleShareClose();
     };
 
     if (isLoading) {
@@ -101,12 +150,31 @@ const Favorites = () => {
                                         <Typography gutterBottom variant="h6" component="div">
                                             {recipe.title}
                                         </Typography>
+                                        {recipe.diets && (
+                                            <Box sx={{ mt: 1 }}>
+                                                {recipe.diets.slice(0, 3).map((diet, index) => (
+                                                    <Chip
+                                                        key={index}
+                                                        label={diet}
+                                                        size="small"
+                                                        sx={{ mr: 0.5, mb: 0.5 }}
+                                                    />
+                                                ))}
+                                            </Box>
+                                        )}
                                     </CardContent>
                                     <CardActions>
                                         <Button size="small" component={Link} to={`/recipe/${recipe.id}`}>
                                             View Recipe
                                         </Button>
                                         <Box sx={{ flexGrow: 1 }} />
+                                        <Button
+                                            size="small"
+                                            onClick={() => handleShareClick(recipe)}
+                                            startIcon={<ShareIcon />}
+                                        >
+                                            {isMobile ? "" : "Share"}
+                                        </Button>
                                         <Button
                                             size="small"
                                             onClick={() => removeFromFavorites(recipe.id)}
@@ -121,6 +189,22 @@ const Favorites = () => {
                     </Grid>
                 </InfiniteScroll>
             )}
+            <Dialog open={shareDialogOpen} onClose={handleShareClose}>
+                <DialogTitle>Share Recipe</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" gutterBottom>
+                        Share this recipe on:
+                    </Typography>
+                    <Box sx={{ display: "flex", justifyContent: "space-around", mt: 2 }}>
+                        <Button onClick={() => handleShare("facebook")}>Facebook</Button>
+                        <Button onClick={() => handleShare("twitter")}>Twitter</Button>
+                        <Button onClick={() => handleShare("pinterest")}>Pinterest</Button>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleShareClose}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };

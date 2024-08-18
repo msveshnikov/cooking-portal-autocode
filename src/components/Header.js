@@ -10,12 +10,14 @@ import {
     FormControlLabel,
     Menu,
     MenuItem,
+    Autocomplete,
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import MicIcon from "@mui/icons-material/Mic";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -56,12 +58,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-const Header = ({ darkMode, setDarkMode, onSearch }) => {
+const Header = ({ darkMode, setDarkMode, onSearch, suggestions }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [anchorEl, setAnchorEl] = useState(null);
+    const [isListening, setIsListening] = useState(false);
 
-    const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value);
+    const handleSearchChange = (event, value) => {
+        setSearchTerm(value);
     };
 
     const handleSearchSubmit = (event) => {
@@ -75,6 +78,26 @@ const Header = ({ darkMode, setDarkMode, onSearch }) => {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleVoiceSearch = () => {
+        setIsListening(true);
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setSearchTerm(transcript);
+            setIsListening(false);
+            onSearch(transcript);
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech recognition error", event.error);
+            setIsListening(false);
+        };
+
+        recognition.start();
     };
 
     return (
@@ -97,6 +120,9 @@ const Header = ({ darkMode, setDarkMode, onSearch }) => {
                     <MenuItem component={Link} to="/favorites" onClick={handleMenuClose}>
                         Favorites
                     </MenuItem>
+                    <MenuItem component={Link} to="/meal-planner" onClick={handleMenuClose}>
+                        Meal Planner
+                    </MenuItem>
                 </Menu>
                 <Typography
                     variant="h6"
@@ -112,14 +138,24 @@ const Header = ({ darkMode, setDarkMode, onSearch }) => {
                         <SearchIcon />
                     </SearchIconWrapper>
                     <form onSubmit={handleSearchSubmit}>
-                        <StyledInputBase
-                            placeholder="Search recipes..."
-                            inputProps={{ "aria-label": "search" }}
+                        <Autocomplete
+                            freeSolo
+                            options={suggestions}
+                            renderInput={(params) => (
+                                <StyledInputBase
+                                    {...params}
+                                    placeholder="Search recipes..."
+                                    inputProps={{ ...params.inputProps, "aria-label": "search" }}
+                                />
+                            )}
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
                     </form>
                 </Search>
+                <IconButton color="inherit" onClick={handleVoiceSearch} disabled={isListening}>
+                    <MicIcon />
+                </IconButton>
                 <div style={{ flexGrow: 1 }} />
                 <FormControlLabel
                     control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} color="default" />}

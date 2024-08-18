@@ -9,35 +9,24 @@ Disallow: /private/
 Disallow: /favorites/
 Disallow: /user/
 Disallow: /auth/
-
-# Protect API key
 Disallow: /*8be8f9112d4f49e8bc35100bb649ce2b
-
-# Prevent indexing of search results
 Disallow: /search?
-
-# Prevent indexing of filtered results
 Disallow: /recipes?filter=
-
-# Prevent indexing of user-specific content
 Disallow: /profile/
 Disallow: /settings/
-
-# Allow indexing of recipe pages
-Allow: /recipes/
-
-# Allow indexing of category pages
-Allow: /categories/
-
-# Prevent indexing of authentication pages
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
-
-# Prevent indexing of dynamic content
 Disallow: /*?*
+Disallow: /404
+Disallow: /500
+Disallow: /meal-planner/
+Disallow: /nutrition/
+Disallow: /reviews/
+Disallow: /voice-control/
 
-# Allow crawling of static assets
+Allow: /recipes/
+Allow: /categories/
 Allow: /*.css$
 Allow: /*.js$
 Allow: /*.png$
@@ -46,9 +35,4 @@ Allow: /*.jpeg$
 Allow: /*.gif$
 Allow: /*.svg$
 
-# Prevent indexing of error pages
-Disallow: /404
-Disallow: /500
-
-# Crawl-delay directive
 Crawl-delay: 10

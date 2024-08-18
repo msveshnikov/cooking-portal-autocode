@@ -22,7 +22,6 @@ A functional application for browsing and discovering delicious recipes.
 -   Include a nutritional information breakdown for each recipe
 -   Implement a social sharing feature for recipes
 -   Add a user-generated content section for recipe reviews and tips
--   Include a voice-controlled recipe navigation feature
 
 ## Considerations
 
@@ -43,8 +42,7 @@ A functional application for browsing and discovering delicious recipes.
 
 1. Clone the repository
 2. Install dependencies: `npm install`
-3. Set up your Spoonacular API key in the configuration file
-4. Run the application: `npm start`
+3. Run the application: `npm start`
 
 ## Contributing
 

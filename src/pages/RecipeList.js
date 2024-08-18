@@ -8,10 +8,15 @@ import {
     FormControlLabel,
     Autocomplete,
     Chip,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
 import RecipeCard from "../components/RecipeCard";
-import { searchRecipes, autocompleteRecipeSearch } from "../services/api";
+import { searchRecipes, autocompleteRecipeSearch, getRecipeRecommendations } from "../services/api";
 import useDebounce from "../hooks/useDebounce";
 import useLocalStorage from "../hooks/useLocalStorage";
 
@@ -25,6 +30,8 @@ const RecipeList = () => {
     const [favorites, setFavorites] = useLocalStorage("favorites", []);
     const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
     const [filters, setFilters] = useState([]);
+    const [recommendedRecipes, setRecommendedRecipes] = useState([]);
+    const [recommendationDialogOpen, setRecommendationDialogOpen] = useState(false);
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const loadRecipes = useCallback(async () => {
@@ -82,6 +89,16 @@ const RecipeList = () => {
         setPage(1);
     };
 
+    const handleGetRecommendations = async () => {
+        try {
+            const recommendations = await getRecipeRecommendations(favorites);
+            setRecommendedRecipes(recommendations);
+            setRecommendationDialogOpen(true);
+        } catch (err) {
+            setError("Failed to get recommendations. Please try again.");
+        }
+    };
+
     if (error) {
         return <Typography color="error">{error}</Typography>;
     }
@@ -120,6 +137,14 @@ const RecipeList = () => {
                 }
                 style={{ marginBottom: "20px" }}
             />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleGetRecommendations}
+                style={{ marginBottom: "20px" }}
+            >
+                Get Recommendations
+            </Button>
             <InfiniteScroll dataLength={recipes.length} next={loadRecipes} hasMore={true} loader={<CircularProgress />}>
                 <Grid container spacing={3}>
                     {recipes.map((recipe) => (
@@ -135,6 +160,26 @@ const RecipeList = () => {
                 </Grid>
             </InfiniteScroll>
             {loading && <CircularProgress style={{ display: "block", margin: "20px auto" }} />}
+            <Dialog open={recommendationDialogOpen} onClose={() => setRecommendationDialogOpen(false)}>
+                <DialogTitle>Recommended Recipes</DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        {recommendedRecipes.map((recipe) => (
+                            <Grid item xs={12} sm={6} key={recipe.id}>
+                                <RecipeCard
+                                    recipe={recipe}
+                                    darkMode={darkMode}
+                                    isFavorite={favorites.includes(recipe.id)}
+                                    onFavoriteToggle={() => toggleFavorite(recipe.id)}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setRecommendationDialogOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
