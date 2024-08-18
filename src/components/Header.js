@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
     AppBar,
@@ -11,6 +11,7 @@ import {
     Menu,
     MenuItem,
     Autocomplete,
+    Tooltip,
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -18,6 +19,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MicIcon from "@mui/icons-material/Mic";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ShareIcon from "@mui/icons-material/Share";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -62,6 +66,23 @@ const Header = ({ darkMode, setDarkMode, onSearch, suggestions }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [anchorEl, setAnchorEl] = useState(null);
     const [isListening, setIsListening] = useState(false);
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 300);
+
+        return () => {
+            clearTimeout(timerId);
+        };
+    }, [searchTerm]);
+
+    useEffect(() => {
+        if (debouncedSearchTerm) {
+            onSearch(debouncedSearchTerm);
+        }
+    }, [debouncedSearchTerm, onSearch]);
 
     const handleSearchChange = (event, value) => {
         setSearchTerm(value);
@@ -100,6 +121,18 @@ const Header = ({ darkMode, setDarkMode, onSearch, suggestions }) => {
         recognition.start();
     };
 
+    const handleShare = async () => {
+        try {
+            await navigator.share({
+                title: "Recipes App",
+                text: "Check out this awesome recipes app!",
+                url: window.location.href,
+            });
+        } catch (error) {
+            console.error("Error sharing:", error);
+        }
+    };
+
     return (
         <AppBar position="static">
             <Toolbar>
@@ -129,7 +162,11 @@ const Header = ({ darkMode, setDarkMode, onSearch, suggestions }) => {
                     noWrap
                     component={Link}
                     to="/"
-                    sx={{ textDecoration: "none", color: "inherit", display: { xs: "none", sm: "block" } }}
+                    sx={{
+                        textDecoration: "none",
+                        color: "inherit",
+                        display: { xs: "none", sm: "block" },
+                    }}
                 >
                     Recipes App
                 </Typography>
@@ -153,10 +190,27 @@ const Header = ({ darkMode, setDarkMode, onSearch, suggestions }) => {
                         />
                     </form>
                 </Search>
-                <IconButton color="inherit" onClick={handleVoiceSearch} disabled={isListening}>
-                    <MicIcon />
-                </IconButton>
+                <Tooltip title="Voice search">
+                    <IconButton color="inherit" onClick={handleVoiceSearch} disabled={isListening}>
+                        <MicIcon />
+                    </IconButton>
+                </Tooltip>
                 <div style={{ flexGrow: 1 }} />
+                <Tooltip title="Favorites">
+                    <IconButton color="inherit" component={Link} to="/favorites">
+                        <FavoriteIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Meal Planner">
+                    <IconButton color="inherit" component={Link} to="/meal-planner">
+                        <CalendarTodayIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Share">
+                    <IconButton color="inherit" onClick={handleShare}>
+                        <ShareIcon />
+                    </IconButton>
+                </Tooltip>
                 <FormControlLabel
                     control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} color="default" />}
                     label={darkMode ? <Brightness7Icon /> : <Brightness4Icon />}

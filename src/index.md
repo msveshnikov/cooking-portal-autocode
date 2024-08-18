@@ -8,14 +8,14 @@ This code represents the entry point of a React application. It sets up the nece
 
 ## Imports
 
-- `React`: The core React library.
-- `ReactDOM`: Provides DOM-specific methods for React.
-- `BrowserRouter`: React Router component for handling routing.
-- `ThemeProvider`, `createTheme`: Material-UI components for theming.
-- `CssBaseline`: Material-UI component for consistent baseline styles.
-- `QueryClient`, `QueryClientProvider`: React Query components for data management.
-- `App`: The main application component.
-- `reportWebVitals`: Function to report web vitals metrics.
+-   `React`: The core React library.
+-   `ReactDOM`: Provides DOM-specific methods for React.
+-   `BrowserRouter`: React Router component for handling routing.
+-   `ThemeProvider`, `createTheme`: Material-UI components for theming.
+-   `CssBaseline`: Material-UI component for consistent baseline styles.
+-   `QueryClient`, `QueryClientProvider`: React Query components for data management.
+-   `App`: The main application component.
+-   `reportWebVitals`: Function to report web vitals metrics.
 
 ## Theme Configuration
 
@@ -25,10 +25,10 @@ A light theme created using Material-UI's `createTheme` function.
 
 ```javascript
 const theme = createTheme({
-  palette: {
-    primary: { main: "#1976d2" },
-    secondary: { main: "#dc004e" },
-  },
+    palette: {
+        primary: { main: "#1976d2" },
+        secondary: { main: "#dc004e" },
+    },
 });
 ```
 
@@ -38,11 +38,11 @@ A dark theme created using Material-UI's `createTheme` function (currently unuse
 
 ```javascript
 const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: { main: "#90caf9" },
-    secondary: { main: "#f48fb1" },
-  },
+    palette: {
+        mode: "dark",
+        primary: { main: "#90caf9" },
+        secondary: { main: "#f48fb1" },
+    },
 });
 ```
 
@@ -58,38 +58,40 @@ An API key exported for use in other parts of the application.
 
 ```javascript
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 5 * 60 * 1000,
+        },
     },
-  },
 });
 ```
 
 Configures React Query with custom options:
-- Disables refetching on window focus
-- Sets a stale time of 5 minutes (300,000 milliseconds)
+
+-   Disables refetching on window focus
+-   Sets a stale time of 5 minutes (300,000 milliseconds)
 
 ## Application Rendering
 
 ```javascript
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <App />
-        </ThemeProvider>
-      </Router>
-    </QueryClientProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <App />
+                </ThemeProvider>
+            </Router>
+        </QueryClientProvider>
+    </React.StrictMode>
 );
 ```
 
 Renders the application with the following structure:
+
 1. Wraps the app in `React.StrictMode` for additional checks and warnings.
 2. Provides React Query context with the configured `queryClient`.
 3. Sets up routing with `Router`.

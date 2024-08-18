@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useCallback } from "react";
 import {
     Container,
@@ -18,13 +17,15 @@ import {
     List,
     ListItem,
     IconButton,
+    Autocomplete,
 } from "@mui/material";
-import { FilterList, Mic } from "@mui/icons-material";
+import { FilterList, Mic, Favorite, FavoriteBorder } from "@mui/icons-material";
 import RecipeCard from "../components/RecipeCard";
-import { getRandomRecipes, searchRecipes } from "../services/api.js";
+import { getRandomRecipes, searchRecipes, autocompleteRecipeSearch } from "../services/api.js";
 import { debounce } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import { useTheme } from "@mui/material/styles";
 
 const Home = () => {
     const [recipes, setRecipes] = useState([]);
@@ -37,7 +38,9 @@ const Home = () => {
     const [favorites, setFavorites] = useState([]);
     const [error, setError] = useState(null);
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
     const { transcript, listening, resetTranscript } = useSpeechRecognition();
+    const theme = useTheme();
 
     useEffect(() => {
         fetchRandomRecipes();
@@ -45,8 +48,8 @@ const Home = () => {
         setFavorites(storedFavorites);
         const storedDarkMode = JSON.parse(localStorage.getItem("darkMode") || "false");
         setDarkMode(storedDarkMode);
-        document.body.style.backgroundColor = storedDarkMode ? "#303030" : "#ffffff";
-    }, []);
+        document.body.style.backgroundColor = storedDarkMode ? theme.palette.background.default : "#ffffff";
+    }, [theme.palette.background.default]);
 
     useEffect(() => {
         if (transcript) {
@@ -83,11 +86,28 @@ const Home = () => {
         [cuisine, diet]
     );
 
+    const handleAutocomplete = useCallback(
+        debounce(async (searchTerm) => {
+            if (searchTerm.length > 2) {
+                try {
+                    const data = await autocompleteRecipeSearch(searchTerm);
+                    setSuggestions(data);
+                } catch (error) {
+                    console.error("Error fetching autocomplete suggestions:", error);
+                }
+            } else {
+                setSuggestions([]);
+            }
+        }, 300),
+        []
+    );
+
     useEffect(() => {
         if (search) {
             handleSearch(search);
+            handleAutocomplete(search);
         }
-    }, [search, handleSearch]);
+    }, [search, handleSearch, handleAutocomplete]);
 
     const loadMore = async () => {
         try {
@@ -105,7 +125,7 @@ const Home = () => {
     const toggleDarkMode = () => {
         const newDarkMode = !darkMode;
         setDarkMode(newDarkMode);
-        document.body.style.backgroundColor = newDarkMode ? "#303030" : "#ffffff";
+        document.body.style.backgroundColor = newDarkMode ? theme.palette.background.default : "#ffffff";
         localStorage.setItem("darkMode", JSON.stringify(newDarkMode));
     };
 
@@ -133,24 +153,47 @@ const Home = () => {
             <FormControlLabel control={<Switch checked={darkMode} onChange={toggleDarkMode} />} label="Dark Mode" />
             <Grid container spacing={2} alignItems="center" marginBottom={4}>
                 <Grid item xs={12} sm={6} md={4}>
-                    <TextField
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Search recipes..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton onClick={handleVoiceSearch}>
-                                    <Mic color={listening ? "secondary" : "inherit"} />
-                                </IconButton>
-                            ),
+                    <Autocomplete
+                        freeSolo
+                        options={suggestions}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Search recipes..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <>
+                                            {params.InputProps.endAdornment}
+                                            <IconButton onClick={handleVoiceSearch}>
+                                                <Mic color={listening ? "secondary" : "inherit"} />
+                                            </IconButton>
+                                        </>
+                                    ),
+                                }}
+                            />
+                        )}
+                        onInputChange={(event, newValue) => {
+                            setSearch(newValue);
                         }}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
                     <Button variant="outlined" startIcon={<FilterList />} onClick={() => setFilterDrawerOpen(true)}>
                         Filters
+                    </Button>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <Button
+                        variant="outlined"
+                        startIcon={favorites.length > 0 ? <Favorite /> : <FavoriteBorder />}
+                        onClick={() => setRecipes(favorites)}
+                    >
+                        Favorites ({favorites.length})
                     </Button>
                 </Grid>
             </Grid>

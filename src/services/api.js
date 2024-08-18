@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = "8be8f9112d4f49e8bc35100bb649ce2b";
+export const API_KEY = "8be8f9112d4f49e8bc35100bb649ce2b";
 const BASE_URL = "https://api.spoonacular.com";
 
 const api = axios.create({
@@ -16,7 +16,9 @@ export const getRandomRecipes = async (number = 10) => {
 };
 
 export const searchRecipes = async (query, offset = 0, number = 10) => {
-    const response = await api.get("/recipes/complexSearch", { params: { query, offset, number } });
+    const response = await api.get("/recipes/complexSearch", {
+        params: { query, offset, number },
+    });
     return response.data;
 };
 
@@ -26,22 +28,30 @@ export const getRecipeDetails = async (id) => {
 };
 
 export const getRecipesByDiet = async (diet, offset = 0, number = 10) => {
-    const response = await api.get("/recipes/complexSearch", { params: { diet, offset, number } });
+    const response = await api.get("/recipes/complexSearch", {
+        params: { diet, offset, number },
+    });
     return response.data;
 };
 
 export const getRecipesByCuisine = async (cuisine, offset = 0, number = 10) => {
-    const response = await api.get("/recipes/complexSearch", { params: { cuisine, offset, number } });
+    const response = await api.get("/recipes/complexSearch", {
+        params: { cuisine, offset, number },
+    });
     return response.data;
 };
 
 export const autocompleteRecipeSearch = async (query, number = 5) => {
-    const response = await api.get("/recipes/autocomplete", { params: { query, number } });
+    const response = await api.get("/recipes/autocomplete", {
+        params: { query, number },
+    });
     return response.data;
 };
 
 export const getRecipesByNutrients = async (nutrients, offset = 0, number = 10) => {
-    const response = await api.get("/recipes/findByNutrients", { params: { ...nutrients, offset, number } });
+    const response = await api.get("/recipes/findByNutrients", {
+        params: { ...nutrients, offset, number },
+    });
     return response.data;
 };
 
@@ -61,7 +71,9 @@ export const getRecipeInstructions = async (id) => {
 };
 
 export const getSimilarRecipes = async (id, number = 5) => {
-    const response = await api.get(`/recipes/${id}/similar`, { params: { number } });
+    const response = await api.get(`/recipes/${id}/similar`, {
+        params: { number },
+    });
     return response.data;
 };
 
@@ -92,6 +104,37 @@ export const convertUnits = async (ingredientName, sourceAmount, sourceUnit, tar
 };
 
 export const getIngredientSubstitutes = async (ingredientName) => {
-    const response = await api.get("/food/ingredients/substitutes", { params: { ingredientName } });
+    const response = await api.get("/food/ingredients/substitutes", {
+        params: { ingredientName },
+    });
+    return response.data;
+};
+
+export const getFavoriteRecipes = async (ids) => {
+    const response = await api.get("/recipes/informationBulk", {
+        params: { ids: ids.join(",") },
+    });
+    return response.data;
+};
+
+export const getRecipesByFilters = async (filters, offset = 0, number = 10) => {
+    const response = await api.get("/recipes/complexSearch", {
+        params: { ...filters, offset, number },
+    });
+    return response.data;
+};
+
+export const getNutritionalInformationBreakdown = async (id) => {
+    const response = await api.get(`/recipes/${id}/nutritionWidget.json`);
+    return response.data;
+};
+
+export const getRecipeReviews = async (id) => {
+    const response = await api.get(`/recipes/${id}/reviews`);
+    return response.data;
+};
+
+export const submitRecipeReview = async (id, review) => {
+    const response = await api.post(`/recipes/${id}/reviews`, review);
     return response.data;
 };

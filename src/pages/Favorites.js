@@ -17,10 +17,16 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 const Favorites = () => {
@@ -30,6 +36,10 @@ const Favorites = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+    const [dietFilter, setDietFilter] = useState("");
+    const [cuisineFilter, setCuisineFilter] = useState("");
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -108,6 +118,38 @@ const Favorites = () => {
         handleShareClose();
     };
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleFilterClick = () => {
+        setFilterDialogOpen(true);
+    };
+
+    const handleFilterClose = () => {
+        setFilterDialogOpen(false);
+    };
+
+    const handleDietFilterChange = (event) => {
+        setDietFilter(event.target.value);
+    };
+
+    const handleCuisineFilterChange = (event) => {
+        setCuisineFilter(event.target.value);
+    };
+
+    const applyFilters = () => {
+        const filteredFavorites = favorites.filter((recipe) => {
+            const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesDiet = dietFilter ? recipe.diets && recipe.diets.includes(dietFilter) : true;
+            const matchesCuisine = cuisineFilter ? recipe.cuisines && recipe.cuisines.includes(cuisineFilter) : true;
+            return matchesSearch && matchesDiet && matchesCuisine;
+        });
+        setDisplayedFavorites(filteredFavorites.slice(0, 9));
+        setHasMore(filteredFavorites.length > 9);
+        handleFilterClose();
+    };
+
     if (isLoading) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -132,6 +174,19 @@ const Favorites = () => {
             <Typography variant="h4" component="h1" gutterBottom>
                 My Favorite Recipes
             </Typography>
+            <Box sx={{ display: "flex", mb: 2 }}>
+                <TextField
+                    label="Search recipes"
+                    variant="outlined"
+                    size="small"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    sx={{ flexGrow: 1, mr: 2 }}
+                />
+                <Button variant="outlined" startIcon={<FilterListIcon />} onClick={handleFilterClick}>
+                    Filter
+                </Button>
+            </Box>
             {favorites.length === 0 ? (
                 <Typography variant="body1">You haven't added any favorites yet.</Typography>
             ) : (
@@ -203,6 +258,33 @@ const Favorites = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleShareClose}>Close</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={filterDialogOpen} onClose={handleFilterClose}>
+                <DialogTitle>Filter Recipes</DialogTitle>
+                <DialogContent>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <InputLabel>Diet</InputLabel>
+                        <Select value={dietFilter} onChange={handleDietFilterChange}>
+                            <MenuItem value="">Any</MenuItem>
+                            <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                            <MenuItem value="vegan">Vegan</MenuItem>
+                            <MenuItem value="gluten free">Gluten Free</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <InputLabel>Cuisine</InputLabel>
+                        <Select value={cuisineFilter} onChange={handleCuisineFilterChange}>
+                            <MenuItem value="">Any</MenuItem>
+                            <MenuItem value="italian">Italian</MenuItem>
+                            <MenuItem value="mexican">Mexican</MenuItem>
+                            <MenuItem value="asian">Asian</MenuItem>
+                        </Select>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleFilterClose}>Cancel</Button>
+                    <Button onClick={applyFilters}>Apply</Button>
                 </DialogActions>
             </Dialog>
         </Container>

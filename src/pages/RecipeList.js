@@ -13,6 +13,8 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Box,
+    Paper,
 } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
 import RecipeCard from "../components/RecipeCard";
@@ -32,12 +34,13 @@ const RecipeList = () => {
     const [filters, setFilters] = useState([]);
     const [recommendedRecipes, setRecommendedRecipes] = useState([]);
     const [recommendationDialogOpen, setRecommendationDialogOpen] = useState(false);
+    const [cuisineType, setCuisineType] = useState("");
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const loadRecipes = useCallback(async () => {
         setLoading(true);
         try {
-            const newRecipes = await searchRecipes(debouncedSearchTerm, filters, page);
+            const newRecipes = await searchRecipes(debouncedSearchTerm, filters, cuisineType, page);
             setRecipes((prevRecipes) => [...prevRecipes, ...newRecipes]);
             setPage((prevPage) => prevPage + 1);
         } catch (err) {
@@ -45,7 +48,7 @@ const RecipeList = () => {
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearchTerm, filters, page]);
+    }, [debouncedSearchTerm, filters, cuisineType, page]);
 
     useEffect(() => {
         loadRecipes();
@@ -89,6 +92,12 @@ const RecipeList = () => {
         setPage(1);
     };
 
+    const handleCuisineTypeChange = (event, newCuisineType) => {
+        setCuisineType(newCuisineType);
+        setRecipes([]);
+        setPage(1);
+    };
+
     const handleGetRecommendations = async () => {
         try {
             const recommendations = await getRecipeRecommendations(favorites);
@@ -104,47 +113,57 @@ const RecipeList = () => {
     }
 
     return (
-        <div
-            style={{
+        <Box
+            sx={{
                 backgroundColor: darkMode ? "#333" : "#fff",
                 color: darkMode ? "#fff" : "#000",
                 minHeight: "100vh",
                 padding: "20px",
             }}
         >
-            <FormControlLabel control={<Switch checked={darkMode} onChange={toggleDarkMode} />} label="Dark Mode" />
-            <Autocomplete
-                freeSolo
-                options={autocompleteSuggestions}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Search recipes..."
-                        style={{ marginBottom: "20px" }}
-                    />
-                )}
-                onInputChange={handleSearchChange}
-            />
-            <Autocomplete
-                multiple
-                options={["vegetarian", "vegan", "gluten-free", "dairy-free"]}
-                renderInput={(params) => <TextField {...params} variant="outlined" label="Dietary Restrictions" />}
-                onChange={handleFilterChange}
-                renderTags={(value, getTagProps) =>
-                    value.map((option, index) => <Chip variant="outlined" label={option} {...getTagProps({ index })} />)
-                }
-                style={{ marginBottom: "20px" }}
-            />
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={handleGetRecommendations}
-                style={{ marginBottom: "20px" }}
-            >
-                Get Recommendations
-            </Button>
+            <Paper elevation={3} sx={{ padding: "20px", marginBottom: "20px" }}>
+                <FormControlLabel control={<Switch checked={darkMode} onChange={toggleDarkMode} />} label="Dark Mode" />
+                <Autocomplete
+                    freeSolo
+                    options={autocompleteSuggestions}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Search recipes..."
+                            sx={{ marginBottom: "20px" }}
+                        />
+                    )}
+                    onInputChange={handleSearchChange}
+                />
+                <Autocomplete
+                    multiple
+                    options={["vegetarian", "vegan", "gluten-free", "dairy-free"]}
+                    renderInput={(params) => <TextField {...params} variant="outlined" label="Dietary Restrictions" />}
+                    onChange={handleFilterChange}
+                    renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                            <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                        ))
+                    }
+                    sx={{ marginBottom: "20px" }}
+                />
+                <Autocomplete
+                    options={["Italian", "Mexican", "Chinese", "Indian", "Japanese", "French"]}
+                    renderInput={(params) => <TextField {...params} variant="outlined" label="Cuisine Type" />}
+                    onChange={handleCuisineTypeChange}
+                    sx={{ marginBottom: "20px" }}
+                />
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleGetRecommendations}
+                    sx={{ marginBottom: "20px" }}
+                >
+                    Get Recommendations
+                </Button>
+            </Paper>
             <InfiniteScroll dataLength={recipes.length} next={loadRecipes} hasMore={true} loader={<CircularProgress />}>
                 <Grid container spacing={3}>
                     {recipes.map((recipe) => (
@@ -159,7 +178,7 @@ const RecipeList = () => {
                     ))}
                 </Grid>
             </InfiniteScroll>
-            {loading && <CircularProgress style={{ display: "block", margin: "20px auto" }} />}
+            {loading && <CircularProgress sx={{ display: "block", margin: "20px auto" }} />}
             <Dialog open={recommendationDialogOpen} onClose={() => setRecommendationDialogOpen(false)}>
                 <DialogTitle>Recommended Recipes</DialogTitle>
                 <DialogContent>
@@ -180,7 +199,7 @@ const RecipeList = () => {
                     <Button onClick={() => setRecommendationDialogOpen(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     );
 };
 

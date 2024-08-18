@@ -11,8 +11,12 @@ import {
     useTheme,
     Snackbar,
     Alert,
-    CircularProgress,
     IconButton,
+    Skeleton,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
@@ -20,6 +24,9 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShareIcon from "@mui/icons-material/Share";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PeopleIcon from "@mui/icons-material/People";
 
 const API_KEY = "8be8f9112d4f49e8bc35100bb649ce2b";
 
@@ -107,9 +114,18 @@ const RecipeDetail = () => {
     if (loading) {
         return (
             <Container maxWidth="lg">
-                <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
-                    <CircularProgress />
+                <Box mb={2}>
+                    <Skeleton variant="circular" width={40} height={40} />
                 </Box>
+                <StyledPaper elevation={3}>
+                    <Skeleton variant="text" width="60%" height={40} />
+                    <Skeleton variant="rectangular" width="100%" height={300} />
+                    <Box mt={2}>
+                        <Skeleton variant="text" width="40%" />
+                        <Skeleton variant="text" width="80%" />
+                        <Skeleton variant="text" width="70%" />
+                    </Box>
+                </StyledPaper>
             </Container>
         );
     }
@@ -164,9 +180,14 @@ const RecipeDetail = () => {
                         <StyledImage src={recipe.image} alt={recipe.title} />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Typography variant="h6" gutterBottom>
-                            Ready in {recipe.readyInMinutes} minutes
-                        </Typography>
+                        <Box display="flex" alignItems="center" mb={2}>
+                            <AccessTimeIcon sx={{ marginRight: 1 }} />
+                            <Typography variant="body1">Ready in {recipe.readyInMinutes} minutes</Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" mb={2}>
+                            <RestaurantIcon sx={{ marginRight: 1 }} />
+                            <Typography variant="body1">{recipe.servings} servings</Typography>
+                        </Box>
                         <Typography variant="body1" paragraph>
                             {recipe.summary.replace(/<[^>]*>/g, "")}
                         </Typography>
@@ -201,15 +222,32 @@ const RecipeDetail = () => {
                 <Typography variant="h5" gutterBottom>
                     Instructions
                 </Typography>
-                <ol>
-                    {recipe.analyzedInstructions[0]?.steps.map((step) => (
-                        <li key={step.number}>
-                            <Typography variant="body1" paragraph>
-                                {step.step}
-                            </Typography>
-                        </li>
+                <List>
+                    {recipe.analyzedInstructions[0]?.steps.map((step, index) => (
+                        <React.Fragment key={step.number}>
+                            <ListItem>
+                                <ListItemText primary={`Step ${step.number}`} secondary={step.step} />
+                            </ListItem>
+                            {index < recipe.analyzedInstructions[0].steps.length - 1 && <Divider />}
+                        </React.Fragment>
                     ))}
-                </ol>
+                </List>
+            </StyledPaper>
+
+            <StyledPaper elevation={3}>
+                <Typography variant="h5" gutterBottom>
+                    Nutrition Information
+                </Typography>
+                <Grid container spacing={2}>
+                    {recipe?.nutrition?.nutrients.slice(0, 6).map((nutrient) => (
+                        <Grid item xs={12} sm={6} md={4} key={nutrient.name}>
+                            <Typography variant="body1">
+                                {nutrient.name}: {nutrient.amount}
+                                {nutrient.unit}
+                            </Typography>
+                        </Grid>
+                    ))}
+                </Grid>
             </StyledPaper>
 
             <Snackbar
