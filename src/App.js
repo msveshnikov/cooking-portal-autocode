@@ -70,7 +70,6 @@ function App() {
                 <Router>
                     <Header toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />
                     <Container>
-                       
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route

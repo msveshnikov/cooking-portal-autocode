@@ -3,9 +3,7 @@ import ReactDOM from "react-dom/client";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "react-query";
-import "./index.css";
 import App from "./App";
-import reportWebVitals from "./reportWebVitals";
 
 const lightTheme = createTheme({
     palette: {
@@ -71,5 +69,3 @@ const Root = () => {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<Root />);
-
-reportWebVitals();

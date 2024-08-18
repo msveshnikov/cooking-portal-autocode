@@ -4,40 +4,40 @@ A functional application for browsing and discovering delicious recipes.
 
 ## Features
 
-- Integration with Spoonacular API
-- Elegant Material-UI design MUI v.5
-- Use react-router-dom v.6
-- Multiple pages for enhanced user experience
+-   Integration with Spoonacular API
+-   Elegant Material-UI design MUI v.5
+-   Use react-router-dom v.6
+-   Multiple pages for enhanced user experience
 
 ## Design Ideas
 
-- Implement a responsive grid layout for recipe cards
-- Add a dark mode toggle for improved accessibility
-- Include a search bar with autocomplete functionality
-- Implement infinite scrolling for recipe lists
-- Add a favorites feature to save preferred recipes
-- Include recipe filtering options (dietary restrictions, cuisine type, etc.)
-- Implement a recipe recommendation system based on user preferences
-- Add a meal planning feature with calendar integration
-- Include a nutritional information breakdown for each recipe
-- Implement a social sharing feature for recipes
-- Add a user-generated content section for recipe reviews and tips
-- Include a voice-controlled recipe navigation feature
+-   Implement a responsive grid layout for recipe cards
+-   Add a dark mode toggle for improved accessibility
+-   Include a search bar with autocomplete functionality
+-   Implement infinite scrolling for recipe lists
+-   Add a favorites feature to save preferred recipes
+-   Include recipe filtering options (dietary restrictions, cuisine type, etc.)
+-   Implement a recipe recommendation system based on user preferences
+-   Add a meal planning feature with calendar integration
+-   Include a nutritional information breakdown for each recipe
+-   Implement a social sharing feature for recipes
+-   Add a user-generated content section for recipe reviews and tips
+-   Include a voice-controlled recipe navigation feature
 
 ## Considerations
 
-- Optimize API calls to reduce data usage
-- Implement caching for frequently accessed recipes
-- Ensure cross-browser compatibility
-- Add loading skeletons for improved perceived performance
-- Implement error handling and user-friendly error messages
-- Consider adding user authentication for personalized features
-- Implement data compression techniques for faster load times
-- Ensure GDPR compliance for user data handling
-- Implement accessibility features (ARIA labels, keyboard navigation)
-- Consider serverless architecture for improved scalability
-- Implement progressive web app (PWA) capabilities for offline access
-- Conduct regular security audits and implement best practices
+-   Optimize API calls to reduce data usage
+-   Implement caching for frequently accessed recipes
+-   Ensure cross-browser compatibility
+-   Add loading skeletons for improved perceived performance
+-   Implement error handling and user-friendly error messages
+-   Consider adding user authentication for personalized features
+-   Implement data compression techniques for faster load times
+-   Ensure GDPR compliance for user data handling
+-   Implement accessibility features (ARIA labels, keyboard navigation)
+-   Consider serverless architecture for improved scalability
+-   Implement progressive web app (PWA) capabilities for offline access
+-   Conduct regular security audits and implement best practices
 
 ## Getting Started
 
@@ -45,10 +45,6 @@ A functional application for browsing and discovering delicious recipes.
 2. Install dependencies: `npm install`
 3. Set up your Spoonacular API key in the configuration file
 4. Run the application: `npm start`
-
-## API Key
-
-Spoonacular API Key: `8be8f9112d4f49e8bc35100bb649ce2b`
 
 ## Contributing
 
