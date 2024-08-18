@@ -6,7 +6,6 @@ import {
     Grid,
     Paper,
     Chip,
-    CircularProgress,
     Box,
     Button,
     useTheme,

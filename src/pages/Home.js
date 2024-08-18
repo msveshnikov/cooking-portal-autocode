@@ -17,7 +17,6 @@ import RecipeCard from "../components/RecipeCard";
 import { getRandomRecipes, searchRecipes } from "../services/api.js";
 import { debounce } from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useTheme } from "@mui/material/styles";
 
 const Home = () => {
     const [recipes, setRecipes] = useState([]);
@@ -29,7 +28,6 @@ const Home = () => {
     const [diet, setDiet] = useState("");
     const [favorites, setFavorites] = useState([]);
     const [error, setError] = useState(null);
-    const theme = useTheme();
 
     useEffect(() => {
         fetchRandomRecipes();
@@ -49,6 +47,7 @@ const Home = () => {
         }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const handleSearch = useCallback(
         debounce(async (searchTerm) => {
             try {
