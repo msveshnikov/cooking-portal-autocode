@@ -2,6 +2,8 @@
 
 A functional application for browsing and discovering delicious recipes.
 
+![alt text](image.png)
+
 ## Features
 
 -   Integration with Spoonacular API
